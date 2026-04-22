@@ -1,0 +1,27 @@
+{
+  "name": "com.xiaojingspace.zlmediakit",
+  "version": "1.0.0",
+  "displayName": "ZLMediakit Plugin",
+  "description": "Unity plugin for WVP PRO SIP port negotiation and ZLMediaKit WebRTC publishing.",
+  "unity": "2021.3",
+  "keywords": [
+    "webrtc",
+    "zlmediakit",
+    "gb28181",
+    "sip",
+    "wvp"
+  ],
+  "author": {
+    "name": "xiaojingspace"
+  },
+  "dependencies": {
+    "com.unity.webrtc": "3.0.0-pre.7"
+  },
+  "samples": [
+    {
+      "displayName": "Example Usage",
+      "description": "MonoBehaviour 示例：绑定摄像头/RenderTexture、按钮启停，并演示 ZLMediakitPluginManager 事件回调。",
+      "path": "Samples~/ExampleUsage"
+    }
+  ]
+}
