@@ -44,6 +44,10 @@ namespace ZLMediakitPlugin.WebRTC
         public event Action<WebRTCSender, string> OnDisconnected;
 
         private bool m_webRtcUpdate = true;
+     
+        private bool VideoTrackNotDestory = true;
+        private bool AudioTrackNotDestory = true;
+
         public void SetCoroutineHost(MonoBehaviour host, bool webRtcUpdate =true)
         {
             coroutineHost = host;
@@ -58,7 +62,7 @@ namespace ZLMediakitPlugin.WebRTC
             {
                 throw new InvalidOperationException("没有可用的摄像头设备。");
             }
-
+            VideoTrackNotDestory = false;
             CameraTexture = new WebCamTexture(deviceName, width, height, fps);
             CameraTexture.Play();
             VideoTrack = new VideoStreamTrack(CameraTexture);
@@ -71,12 +75,13 @@ namespace ZLMediakitPlugin.WebRTC
             {
                 throw new ArgumentNullException(nameof(renderTexture));
             }
-
+            VideoTrackNotDestory = false;
             VideoTrack = new VideoStreamTrack(BoundRenderTexture);
         }
         public void BindVideoTrack(VideoStreamTrack track )
         {
-            VideoTrack =track;
+               VideoTrackNotDestory = true;
+               VideoTrack =track;
         }
         /// <summary>
         /// 绑定要送入 WebRTC 的 <see cref="AudioSource"/>。
@@ -88,8 +93,7 @@ namespace ZLMediakitPlugin.WebRTC
         public void BindAudioSource(AudioSource audioSource, string microphoneDeviceName = null, bool forceUseMicrophone = false)
         {
             StopMicCaptureIfOwned();
-            AudioTrack?.Dispose();
-            AudioTrack = null;
+      
             BoundAudioSource = audioSource;
 
             if (audioSource == null)
@@ -151,14 +155,14 @@ namespace ZLMediakitPlugin.WebRTC
             {
                 audioSource.Play();
             }
-
+            AudioTrackNotDestory = false;
             AudioTrack = new AudioStreamTrack(audioSource);
         }
   public void BindAudioSource(AudioStreamTrack  track)
         {
-            AudioTrack?.Dispose();
-            AudioTrack = null;
-            AudioTrack=track;
+      
+            AudioTrackNotDestory = true;
+            AudioTrack =track;
         }
         private static string ResolveMicrophoneDeviceName(string preferred)
         {
@@ -294,12 +298,16 @@ namespace ZLMediakitPlugin.WebRTC
             {
                 CameraTexture.Stop();
             }
-
-            VideoTrack?.Dispose();
-            VideoTrack = null;
-
-            AudioTrack?.Dispose();
-            AudioTrack = null;
+            if (!VideoTrackNotDestory)
+            {
+                VideoTrack?.Dispose();
+                VideoTrack = null;
+            }
+            if (!AudioTrackNotDestory)
+            {
+                AudioTrack?.Dispose();
+                AudioTrack = null;
+            }
             StopMicCaptureIfOwned();
 
             MediaStream?.Dispose();
@@ -405,6 +413,11 @@ namespace ZLMediakitPlugin.WebRTC
         protected virtual void BuildMediaStreamAndTracks()
         {
             MediaStream = new MediaStream();
+            if (VideoTrack==null&& AudioTrack==null)
+            {
+                throw new InvalidOperationException("未绑定任何音视频轨道，AudioTrack null || VideoTrack null");
+            }
+
             bool hasAnyTrack = false;
             if (VideoTrack != null)
             {
