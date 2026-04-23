@@ -1,6 +1,6 @@
 {
   "name": "com.xiaojingspace.zlmediakit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "ZLMediakit Plugin",
   "description": "Unity plugin for WVP PRO SIP port negotiation and ZLMediaKit WebRTC publishing.",
   "unity": "2021.3",
