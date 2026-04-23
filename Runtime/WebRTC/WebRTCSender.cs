@@ -22,7 +22,7 @@ namespace ZLMediakitPlugin.WebRTC
 
         public WebCamTexture CameraTexture;
         protected WebCameraIndex BoundCameraIndex;
-        protected RenderTexture BoundRenderTexture;
+        protected Texture BoundRenderTexture;
         protected AudioSource BoundAudioSource;
 
         protected string StreamId;
@@ -64,7 +64,7 @@ namespace ZLMediakitPlugin.WebRTC
             VideoTrack = new VideoStreamTrack(CameraTexture);
         }
 
-        public void BindRenderTexture(RenderTexture renderTexture)
+        public void BindRenderTexture(Texture renderTexture)
         {
             BoundRenderTexture = renderTexture;
             if (renderTexture == null)
@@ -72,9 +72,12 @@ namespace ZLMediakitPlugin.WebRTC
                 throw new ArgumentNullException(nameof(renderTexture));
             }
 
-            VideoTrack = new VideoStreamTrack(renderTexture);
+            VideoTrack = new VideoStreamTrack(BoundRenderTexture);
         }
-
+        public void BindVideoTrack(VideoStreamTrack track )
+        {
+            VideoTrack =track;
+        }
         /// <summary>
         /// 绑定要送入 WebRTC 的 <see cref="AudioSource"/>。
         /// Unity WebRTC 的 <see cref="AudioStreamTrack"/> 需要该 AudioSource 正在播放有效音频；若 <c>clip == null</c>，
@@ -82,7 +85,7 @@ namespace ZLMediakitPlugin.WebRTC
         /// </summary>
         /// <param name="audioSource">用于承载采集的 AudioSource（勿与 <see cref="AudioListener"/> 同物体）。</param>
         /// <param name="microphoneDeviceName">可选，<see cref="Microphone.devices"/> 中的设备名；为空则用第一个设备。</param>
-        public void BindAudioSource(AudioSource audioSource, string microphoneDeviceName = null)
+        public void BindAudioSource(AudioSource audioSource, string microphoneDeviceName = null, bool forceUseMicrophone = false)
         {
             StopMicCaptureIfOwned();
             AudioTrack?.Dispose();
@@ -94,7 +97,7 @@ namespace ZLMediakitPlugin.WebRTC
                 return;
             }
 
-            if (audioSource.clip == null)
+            if (forceUseMicrophone)
             {
                 if (Microphone.devices == null || Microphone.devices.Length == 0)
                 {
@@ -151,7 +154,12 @@ namespace ZLMediakitPlugin.WebRTC
 
             AudioTrack = new AudioStreamTrack(audioSource);
         }
-
+  public void BindAudioSource(AudioStreamTrack  track)
+        {
+            AudioTrack?.Dispose();
+            AudioTrack = null;
+            AudioTrack=track;
+        }
         private static string ResolveMicrophoneDeviceName(string preferred)
         {
             foreach (string d in Microphone.devices)
